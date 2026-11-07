@@ -65,7 +65,12 @@ body{background:var(--bg);color:var(--text)}
 .draw-help{font-size:12px;line-height:1.55;color:#61756f}
 .draw-input{min-height:150px;resize:vertical}
 @media(prefers-reduced-motion:reduce){.draw-wheel.spinning strong{animation:none}}
-</style></head><body>
+
+#accountView .panel{max-width:750px}#accountView .chip{cursor:pointer}#accountView .field{display:grid;gap:6px;margin:12px 0}#accountView .field input{width:100%;border:1px solid #dce4e8;border-radius:10px;background:#f8fafb;color:#172630;padding:12px}#accountView [hidden]{display:none!important}
+
+/* Etapa 3 — ingreso social e invitado */
+.auth-options{max-width:460px;display:grid;gap:10px;margin:18px 0 20px}.auth-google,.auth-guest{display:flex;align-items:center;justify-content:center;gap:12px;min-height:48px;padding:11px 15px;border-radius:12px;font-size:14px;font-weight:750;cursor:pointer}.auth-google{border:1px solid #cbd7dd;background:#fff;color:#223943}.auth-google:hover{background:#f3f7f8}.auth-google svg{height:20px;width:20px;flex:none}.auth-guest{border:1px solid #b9d8ca;background:#edf7f1;color:#17654e}.auth-guest:hover{background:#e0f1e8}.auth-or{display:flex;align-items:center;gap:12px;color:#768a81;font-size:11px;text-transform:uppercase;letter-spacing:.08em}.auth-or:before,.auth-or:after{content:'';height:1px;background:#e0e8e3;flex:1}.guest-banner{padding:12px 14px;border:1px solid #bcdcc9;border-radius:12px;background:#f1f8f3;font-size:13px;line-height:1.55;margin:12px 0}.guest-banner b{color:#16674d}.guest-banner button{border:0;background:transparent;color:#146349;text-decoration:underline;cursor:pointer;font-weight:750}.auth-google:disabled,.auth-guest:disabled{opacity:.55;cursor:wait}
+.contact-actions{margin-top:18px;display:grid;gap:10px}.contact-actions button{width:100%}</style></head><body>
 <div class="app">
 <header class="topbar">
   <div class="brand"><div class="brand-mark">U</div><div>UNAMANO<small>SORTEOS</small></div></div>
@@ -80,13 +85,14 @@ body{background:var(--bg);color:var(--text)}
         <div class="eyebrow">PREMIOS ÚTILES · INFORMACIÓN CLARA</div>
         <h1>Un impulso para tu próximo proyecto.</h1>
         <p>Conocé premios pensados para ayudarte a empezar o hacer crecer tu emprendimiento. Cada sorteo tendrá sus reglas y fechas publicadas antes de abrirse.</p>
-        <button class="btn" onclick="document.getElementById('featured').scrollIntoView({behavior:'smooth'})">Ver premios de ejemplo <span aria-hidden="true">→</span></button>
+        <button class="btn" onclick="document.getElementById('featured').scrollIntoView({behavior:'smooth'})">Explorar premios <span aria-hidden="true">→</span></button>
       </div><div class="hero-side" aria-hidden="true">✦</div>
     </section>
-    <div class="trust-strip"><span class="trust-dot"></span><div><b>Información transparente</b><small>Esta versión es una demostración. Todavía no hay sorteos abiertos.</small></div></div>
+    <div class="guest-banner" id="guestHomeBanner" hidden><b>Estás en modo invitado.</b> Podés explorar premios sin registrarte. <button type="button" id="guestHomeLogin">Iniciar sesión</button></div>
+    <div class="trust-strip"><span class="trust-dot"></span><div><b>Información transparente</b><small>Las fichas son informativas. Todavía no hay participaciones habilitadas.</small></div></div>
     <div class="section-head"><div><h2>Buscá por categoría</h2><p>Premios que pueden impulsar un emprendimiento.</p></div></div>
     <div class="chips" id="categoryChips"></div>
-    <div class="section-head" id="featured"><div><h2>Premios</h2><p>Ejemplos de lo que se podrá sortear.</p></div><span class="status off">PRÓXIMAMENTE</span></div>
+    <div class="section-head" id="featured"><div><h2>Premios</h2><p>Campañas informativas publicadas, cuando estén disponibles.</p></div><span class="status off">SIN PARTICIPACIÓN ABIERTA</span></div>
     <div class="cards" id="campaignCards"></div>
     <section class="how-panel">
       <div class="section-head"><div><h2>¿Cómo funciona?</h2><p>Un proceso simple, explicado antes de cada sorteo.</p></div></div>
@@ -96,19 +102,46 @@ body{background:var(--bg);color:var(--text)}
         <div class="how-step"><span>03</span><div><b>Seguís el resultado</b><p>El ganador y el procedimiento se publican con su respaldo.</p></div></div>
       </div>
     </section>
-    <div class="notice"><strong>Estado actual:</strong> UNAMANO está en etapa de demostración. No se reciben pagos, no se reservan participaciones y no se realizan sorteos reales. Los premios mostrados son ejemplos ilustrativos.
+    <div class="notice"><strong>Estado actual:</strong> UNAMANO está en etapa informativa. No se reciben pagos, no se reservan participaciones y no se realizan sorteos reales. Las fichas publicadas no implican apertura de participación.
     </div>
   </div>
   <div id="detailView" style="display:none"></div>
   <div id="accountView" style="display:none">
-    <div class="toolbar"><div><h2>Mi cuenta</h2><p class="muted">Tu espacio personal</p></div></div>
-    <div class="panel"><div style="font-size:34px">👤</div><h3>Tu cuenta aparecerá acá</h3><p class="muted">Todavía no hay acceso de participantes habilitado.</p><span class="status off">CUENTA NO HABILITADA</span></div>
-    <div class="section-head"><div><h2>Mi actividad</h2><p>En esta versión no hay participaciones reales.</p></div></div>
-    <div class="panel"><div class="empty">🎟️<br><b>Todavía no tenés participaciones</b><br>Cuando la plataforma esté habilitada, tus números y comprobantes aparecerán acá.</div></div>
+    <div class="toolbar"><div><h2>Mi cuenta</h2><p class="muted">Accedé a tu perfil de UNAMANO. Todavía no se reciben participaciones.</p></div></div>
+    <div class="panel" id="accountGuest">
+      <div class="eyebrow">Acceso de participantes</div><h3 style="margin-top:9px">Entrá como prefieras</h3>
+      <div class="auth-options">
+        <button type="button" class="auth-google" id="googleSignIn" aria-label="Continuar con Google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.79 7.18l7.73 6C44.4 38.03 46.98 31.9 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.12.76-4.59l-7.98-6.2A23.83 23.83 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continuar con Google</button>
+        <button type="button" class="auth-guest" id="guestSignIn">↗ Continuar como invitado</button>
+        <div class="auth-or">o con correo electrónico</div>
+      </div>
+      <div class="chips" style="margin:15px 0"><button type="button" class="chip active" data-account-mode="login">Ingresar</button><button type="button" class="chip" data-account-mode="register">Registrarme</button><button type="button" class="chip" data-account-mode="reset">Recuperar acceso</button></div>
+      <form id="accountForm" style="max-width:460px">
+        <div class="field" id="accountNameField" hidden><label for="accountName">Nombre visible</label><input id="accountName" autocomplete="name" maxlength="100"></div>
+        <div class="field"><label for="accountEmail">Correo electrónico</label><input id="accountEmail" type="email" autocomplete="email" required></div>
+        <div class="field" id="accountPasswordField"><label for="accountPassword">Contraseña (mínimo 8 caracteres)</label><input id="accountPassword" type="password" autocomplete="current-password" minlength="8"></div>
+        <button type="submit" class="btn" id="accountSubmit">Ingresar</button>
+      </form>
+      <p id="accountMessage" class="muted" role="status" aria-live="polite"></p>
+    </div>
+    <div class="panel" id="accountGuestMode" hidden>
+      <div class="eyebrow">Modo invitado</div><h3 style="margin-top:9px">Estás explorando UNAMANO como invitado</h3>
+      <p class="muted">Podés consultar premios y reglamentos publicados. No se crea ninguna cuenta ni se almacena un perfil en Supabase. Para guardar un perfil personal, ingresá o registrate.</p>
+      <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="btn small" id="guestUpgrade">Iniciar sesión o registrarme</button><button type="button" class="btn secondary small" id="guestExit">Salir del modo invitado</button></div>
+      <div class="notice"><strong>Participación deshabilitada.</strong> Los invitados no pueden reservar números, comprar ni participar en sorteos.</div>
+    </div>
+    <div class="panel" id="accountSigned" hidden>
+      <div class="toolbar"><div><h3>Perfil</h3><p class="muted" id="accountSignedEmail"></p></div><button class="btn secondary small" id="accountLogout">Cerrar sesión</button></div>
+      <form id="profileForm" style="max-width:460px"><div class="field"><label for="profileName">Nombre visible</label><input id="profileName" maxlength="100" required></div><button class="btn small" type="submit">Guardar nombre</button></form>
+      <p id="profileMessage" class="muted" role="status"></p>
+      <div class="notice"><strong>Sin participaciones.</strong> El registro es solo para crear una cuenta. Los pagos, números, compras y sorteos oficiales siguen deshabilitados.</div><div class="panel" id="myDemoRequests"><p class="muted">Cargando solicitudes de prueba…</p></div><div id="myInquiries" class="panel">Mis consultas informativas aparecerán acá.</div>
+    </div>
   </div>
   <div id="winnersView" style="display:none">
     <div class="toolbar"><div><h2>Ganadores</h2><p class="muted">Resultados publicados únicamente cuando haya sorteos reales y verificados.</p></div></div>
-    <div class="panel"><div class="empty">🏆<br><b>Todavía no hay ganadores publicados</b><br>No se publican resultados ficticios como si fueran reales.</div></div>
+    <div class="panel"><div class="empty">🏆<br><b>Todavía no hay ganadores oficiales</b><br>No se publican resultados ficticios como si fueran reales.</div></div>
+    <div class="section-head"><div><h2>Extracciones de demostración</h2><p>Simulaciones auditables que no otorgan premios ni participaciones oficiales.</p></div></div>
+    <div id="demoDrawResults" class="panel"><div class="muted">Consultando resultados de prueba…</div></div>
   </div>
 </section>
 
@@ -125,23 +158,177 @@ body{background:var(--bg);color:var(--text)}
 <script>
 const SUPABASE_URL="https://rqpwiuripbmhmijfepmw.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_CvylhdVU86NIpSXojEyelA_c1gHLacp";
-const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const supabase=window.supabase && typeof window.supabase.createClient==='function' ? window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY) : null;
 
 let campaigns=[];let activeCategory="Todos";const categories=["Todos","Herramientas","Gastronomía","Máquinas","Tecnología","Vehículos","Hogar"];
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600)}
 async function loadPublicCampaigns(){
- const {data,error}=await supabase.from("campaigns").select("id,title,description,status,prize_id,prizes(title,description,category_id,categories(name))").in("status",["published","sales_open","closed","drawn","completed"]).order("created_at",{ascending:false});
+ if(!supabase){document.getElementById('campaignCards').innerHTML='<div class="panel empty"><b>No se pudo cargar Supabase.</b><p>Revisá la conexión a internet o posibles bloqueadores del navegador y recargá la página.</p></div>';return;}
+ const {data,error}=await supabase.from("campaigns").select("id,title,description,status,prize_id,total_numbers,starts_at,ends_at,draw_at,organizer_name,rules_summary,rules_url,prizes(title,description,category_id,media_paths,categories(name))").in("status",["published","sales_open","closed","drawn","completed"]).order("created_at",{ascending:false});
  if(error){console.error("UNAMANO: error al consultar campañas públicas",error);document.getElementById("campaignCards").innerHTML='<div class="panel empty"><b>No se pudo conectar con los premios.</b><p>Revisá tu conexión e intentá nuevamente.</p><button class="btn secondary small" type="button" onclick="loadPublicCampaigns()">Reintentar conexión</button></div>';return;}
- campaigns=(data||[]).map(c=>({id:c.id,title:c.title,category:c.prizes?.categories?.name||"General",icon:"🎁",tone:"",description:c.description||c.prizes?.description||"Consultá las condiciones de esta campaña.",status:c.status}));
+ campaigns=(data||[]).map(c=>({id:c.id,title:c.title,category:c.prizes?.categories?.name||"General",icon:"🎁",tone:"",description:c.description||c.prizes?.description||"Consultá las condiciones de esta campaña.",status:c.status,totalNumbers:c.total_numbers,media:(c.prizes?.media_paths||[]).filter(x=>/^https:\/\/[^\s<>"']+$/i.test(x)).slice(0,3),organizer:c.organizer_name,rules:c.rules_summary,rulesUrl:c.rules_url,startsAt:c.starts_at,endsAt:c.ends_at,drawAt:c.draw_at}));
  const cats=["Todos",...new Set(campaigns.map(c=>c.category))];categories.splice(0,categories.length,...cats);if(!categories.includes(activeCategory))activeCategory="Todos";renderCategories();renderCards();
 }
-function renderCategories(){document.getElementById("categoryChips").innerHTML=categories.map(c=>`<button class="chip ${activeCategory===c?'active':''}" onclick="filterCategory('${String(c).replace(/'/g,"\\'")}')">${escapeHTML(c)}</button>`).join("")}
-function renderCards(){const list=campaigns.filter(c=>activeCategory==="Todos"||c.category===activeCategory);document.getElementById("campaignCards").innerHTML=list.length?list.map(c=>`<article class="card"><div class="prize-art ${c.tone}"><span class="corner">CAMPAÑA PUBLICADA</span><span class="prize-icon" aria-hidden="true">${c.icon}</span></div><div class="card-body"><div class="eyebrow">${escapeHTML(c.category)}</div><h3>${escapeHTML(c.title)}</h3><p class="muted card-description">${escapeHTML(c.description||"")}</p><div class="card-info"><span>Estado</span><b>${escapeHTML(c.status)}</b></div><div class="card-foot"><span class="muted card-note">Información oficial</span><button class="btn small" onclick="openDetail('${c.id}')">Conocer premio</button></div></div></article>`).join(""):'<div class="panel empty">Todavía no hay campañas publicadas. Volvé pronto para conocer las novedades de UNAMANO.</div>';}
+function renderCategories(){document.getElementById("categoryChips").innerHTML=categories.map(c=>`<button type="button" data-category="${escapeHTML(c)}" class="chip ${activeCategory===c?'active':''}">${escapeHTML(c)}</button>`).join("")}
+document.getElementById('categoryChips').addEventListener('click',e=>{const btn=e.target.closest('[data-category]');if(btn)filterCategory(btn.dataset.category);});
+function renderCards(){const list=campaigns.filter(c=>activeCategory==="Todos"||c.category===activeCategory);document.getElementById("campaignCards").innerHTML=list.length?list.map(c=>`<article class="card"><div class="prize-art ${c.tone}"><span class="corner">CAMPAÑA PUBLICADA</span>${c.media.length?`<img src="${escapeHTML(c.media[0])}" alt="Premio ${escapeHTML(c.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`:`<span class="prize-icon" aria-hidden="true">${c.icon}</span>`}</div><div class="card-body"><div class="eyebrow">${escapeHTML(c.category)}</div><h3>${escapeHTML(c.title)}</h3><p class="muted card-description">${escapeHTML(c.description||"")}</p><div class="card-info"><span>Estado</span><b>${escapeHTML(c.status)}</b></div><div class="card-foot"><span class="muted card-note">Información oficial</span><button class="btn small" onclick="openDetail('${c.id}')">Conocer premio</button></div></div></article>`).join(""):'<div class="panel empty">Todavía no hay campañas publicadas. Volvé pronto para conocer las novedades de UNAMANO.</div>';}
 function filterCategory(c){activeCategory=c;renderCategories();renderCards()}
-function openDetail(id){const c=campaigns.find(x=>String(x.id)===String(id));if(!c)return;document.getElementById("homeView").style.display="none";document.getElementById("accountView").style.display="none";document.getElementById("winnersView").style.display="none";const d=document.getElementById("detailView");d.style.display="block";d.innerHTML=`<button class="btn secondary small" onclick="backHome()">← Volver a premios</button><div class="detail-heading"><div><div class="eyebrow">${escapeHTML(c.category)} · CAMPAÑA</div><h2>${escapeHTML(c.title)}</h2><p class="muted">Una oportunidad pensada para acompañar un emprendimiento.</p></div><span class="status off">PRÓXIMAMENTE</span></div><div class="detail-grid"><div><div class="detail-art ${c.tone}"><span aria-hidden="true">${c.icon}</span></div><div class="notice"><strong>Premio ilustrativo.</strong> Esta ficha muestra cómo se presentará una campaña. Todavía no está abierta a participación.</div></div><div class="panel detail-info"><h3>Sobre el premio</h3><p class="muted">${escapeHTML(c.description||"")}</p><div class="detail-row"><span>Disponibilidad</span><b>Próximamente</b></div><div class="detail-row"><span>Fecha del sorteo</span><b>A confirmar</b></div><div class="detail-row"><span>Organizador</span><b>A informar</b></div><div class="detail-row"><span>Reglamento</span><b>Se publicará antes de abrir</b></div><div class="detail-locked"><span class="lock-icon">🔒</span><div><b>Participación todavía no disponible</b><p>Cuando el sorteo esté habilitado vas a poder consultar las condiciones completas y participar desde esta ficha.</p></div></div><button class="btn" style="width:100%" disabled>Participación no habilitada</button></div></div>`;window.scrollTo(0,0)}
+function displayDate(value){if(!value)return 'A confirmar';const d=new Date(value);return Number.isNaN(d.getTime())?'A confirmar':new Intl.DateTimeFormat('es-AR',{dateStyle:'long',timeStyle:'short'}).format(d);}
+function openDetail(id){const c=campaigns.find(x=>String(x.id)===String(id));if(!c)return;document.getElementById('homeView').style.display='none';document.getElementById('accountView').style.display='none';document.getElementById('winnersView').style.display='none';const d=document.getElementById('detailView');d.style.display='block';demoSelectedNumbers.clear();const image=c.media.length?'<img src="'+escapeHTML(c.media[0])+'" alt="Imagen del premio" style="width:100%;height:100%;max-height:350px;object-fit:contain;border-radius:18px">':'<span aria-hidden="true">🎁</span>';
+const row=(label,value)=>'<div class="detail-row"><span>'+label+'</span><b>'+escapeHTML(value||'A confirmar')+'</b></div>';
+const rulesLink=c.rulesUrl&&/^https:\/\/[^\s<>"']+$/i.test(c.rulesUrl)?'<a href="'+escapeHTML(c.rulesUrl)+'" target="_blank" rel="noopener noreferrer">Consultar reglamento completo</a>':'<span class="muted">Reglamento completo pendiente</span>';
+d.innerHTML='<button class="btn secondary small" onclick="backHome()">← Volver a premios</button><div class="detail-heading"><div><div class="eyebrow">'+escapeHTML(c.category)+' · FICHA INFORMATIVA</div><h2>'+escapeHTML(c.title)+'</h2></div><span class="status off">SIN PARTICIPACIONES</span></div><div class="detail-grid"><div><div class="detail-art">'+image+'</div><div class="notice"><strong>Sin ventas.</strong> Esta ficha es informativa. Los números que elijas son simulados y no constituyen una compra, reserva ni participación válida.</div></div><div class="panel detail-info"><h3>Descripción del premio</h3><p class="muted">'+escapeHTML(c.description||'')+'</p>'+row('Organizador',c.organizer)+row('Inicio previsto',displayDate(c.startsAt))+row('Cierre previsto',displayDate(c.endsAt))+row('Sorteo previsto',displayDate(c.drawAt))+'<h3 style="margin-top:22px">Condiciones y reglamento</h3><p style="white-space:pre-wrap">'+escapeHTML(c.rules||'Información a confirmar.')+'</p><p>'+rulesLink+'</p><div class="detail-locked"><span class="lock-icon">🔒</span><div><b>Participación deshabilitada</b><p>Esta aplicación todavía no recibe pagos ni realiza sorteos reales.</p></div></div><button class="btn" style="width:100%" disabled>Participación no habilitada</button><section class="panel" style="margin-top:15px"><h3>Seleccionar números · DEMOSTRACIÓN</h3><p class="muted">Seleccioná hasta 10 números. La solicitud no representa una compra, reserva ni participación válida. Solo usuarios registrados pueden enviarla.</p><div id="demoNumberGrid" class="number-grid"></div><p id="demoNumbersFeedback" class="muted" role="status"></p><button class="btn secondary" type="button" data-demo-submit="'+escapeHTML(c.id)+'">Enviar solicitud de prueba</button></section><div id="campaignContact" class="contact-actions"><button type="button" class="btn secondary" data-whatsapp-contact="'+escapeHTML(c.id)+'">Consultar por WhatsApp</button><button type="button" class="btn secondary" data-save-inquiry="'+escapeHTML(c.id)+'">Guardar consulta en mi cuenta</button><p id="contactFeedback" class="muted" role="status"></p><p class="muted">Solo consultas informativas: no confirma compras, pagos ni reservas de números.</p></div></div></div>';
+renderDemoNumbers(c);window.scrollTo(0,0);}
 function backHome(){document.getElementById("detailView").style.display="none";document.getElementById("homeView").style.display="block";window.scrollTo(0,0)}
-function indexTab(tab,btn){document.getElementById("homeView").style.display=tab==="home"?"block":"none";document.getElementById("detailView").style.display="none";document.getElementById("accountView").style.display=tab==="account"?"block":"none";document.getElementById("winnersView").style.display=tab==="winners"?"block":"none";document.querySelectorAll("#indexNav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");window.scrollTo(0,0)}
+function indexTab(tab,btn){if(tab==='winners')loadDemoDrawResults();document.getElementById("homeView").style.display=tab==="home"?"block":"none";document.getElementById("detailView").style.display="none";document.getElementById("accountView").style.display=tab==="account"?"block":"none";document.getElementById("winnersView").style.display=tab==="winners"?"block":"none";document.querySelectorAll("#indexNav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");window.scrollTo(0,0)}
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-renderCategories();renderCards();loadPublicCampaigns();
+
+// Resultados de demostración: datos de lectura pública, sin identidad privada.
+async function loadDemoDrawResults(){
+ const container=document.getElementById('demoDrawResults');if(!container)return;
+ if(!supabase){container.textContent='Sin conexión a Supabase.';return;}
+ const {data,error}=await supabase.from('demo_draws').select('id,campaign_id,entry_count,commitment,snapshot_hash,seed,winning_number,completed_at,status').eq('status','completed').order('completed_at',{ascending:false}).limit(30);
+ if(error){container.textContent='No fue posible consultar resultados de demostración: '+error.message;return;}
+ if(!data?.length){container.innerHTML='<div class="empty">Todavía no hay extracciones de demostración completadas.</div>';return;}
+ container.innerHTML=data.map(d=>'<article style="padding:14px 0;border-bottom:1px solid #dce5e9"><span class="status">RESULTADO DE PRUEBA · NO OFICIAL</span><h3 style="margin:8px 0">Número simulado: '+escapeHTML(d.winning_number)+'</h3><div class="muted">'+escapeHTML(new Date(d.completed_at).toLocaleString('es-AR'))+' · '+escapeHTML(d.entry_count)+' números incluidos</div><details class="diag"><summary>Verificar el resultado SHA-256</summary><div style="overflow-wrap:anywhere;font-size:11px;line-height:1.65">ID: '+escapeHTML(d.id)+'<br>Campaña: '+escapeHTML(d.campaign_id)+'<br>Compromiso SHA-256: '+escapeHTML(d.commitment)+'<br>Huella de la lista: '+escapeHTML(d.snapshot_hash)+'<br>Semilla publicada: '+escapeHTML(d.seed)+'</div><button type="button" class="btn secondary small" data-verify-demo="'+escapeHTML(d.id)+'">Verificar localmente</button><p class="muted" data-verify-feedback="'+escapeHTML(d.id)+'"></p><p class="muted">Algoritmo: SHA-256(semilla + ":" + hash de lista), primeros 8 dígitos hexadecimales como entero sin signo, módulo del total; números ordenados ascendentemente. La huella de lista es SHA-256 de los números separados por comas.</p></details></article>').join('');
+}
+async function verifyDemoDraw(id){
+ const output=document.querySelector('[data-verify-feedback="'+id+'"]');if(!output)return;
+ const {data:rows,error}=await supabase.from('demo_draws').select('seed,commitment,snapshot_hash,winning_number,entry_count').eq('id',id).eq('status','completed').limit(1);
+ if(error||!rows?.length){output.textContent='No se pudo consultar la prueba.';return;}
+ const d=rows[0];const {data:entries,error:err}=await supabase.from('demo_draw_public_numbers').select('number_value').eq('draw_id',id).order('number_value',{ascending:true});
+ if(err||!entries?.length){output.textContent='No se pudo obtener la lista congelada de números.';return;}
+ if(!crypto?.subtle){output.textContent='La verificación necesita un contexto seguro (HTTPS).';return;}
+ const sha=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))).map(b=>b.toString(16).padStart(2,'0')).join('');
+ const nums=entries.map(x=>Number(x.number_value));const listHash=await sha(nums.join(','));const commit=await sha(d.seed);const h=await sha(d.seed+':'+d.snapshot_hash);const i=parseInt(h.slice(0,8),16)%nums.length;
+ output.textContent=nums.length===d.entry_count&&listHash===d.snapshot_hash&&commit===d.commitment&&nums[i]===d.winning_number?'VERIFICADO: compromiso, lista y número ganador coinciden.':'ALERTA: la verificación no coincide con el registro.';
+}
+document.getElementById('demoDrawResults').addEventListener('click',e=>{const btn=e.target.closest('[data-verify-demo]');if(btn)verifyDemoDraw(btn.dataset.verifyDemo).catch(err=>toast('Error de verificación: '+err.message));});
+// Solicitudes de prueba: independientes de pedidos y números oficiales.
+const demoSelectedNumbers=new Set();
+let demoTakenNumbers=new Set();
+async function renderDemoNumbers(c){
+ const grid=document.getElementById('demoNumberGrid');if(!grid||!supabase)return;
+ grid.textContent='Cargando números de demostración…';
+ const {data,error}=await supabase.from('demo_number_claims').select('number_value').eq('campaign_id',c.id).limit(5000);
+ if(error){grid.textContent='No se pudieron cargar los números de prueba: '+error.message;return;}
+ demoTakenNumbers=new Set((data||[]).map(x=>Number(x.number_value)));
+ const total=Math.min(Number(c.totalNumbers)||0,1000);
+ grid.innerHTML=Array.from({length:total},(_,i)=>{const n=i+1;return '<button class="number '+(demoTakenNumbers.has(n)?'taken':'')+'" type="button" data-demo-number="'+n+'" '+(demoTakenNumbers.has(n)?'disabled':'')+'>'+String(n).padStart(3,'0')+'</button>';}).join('');
+ const feedback=document.getElementById('demoNumbersFeedback');if(feedback)feedback.textContent='Seleccionados: ninguno · Disponibles en la demostración: '+(total-demoTakenNumbers.size);
+ if(c.totalNumbers>1000){const msg=document.createElement('p');msg.className='muted';msg.textContent='Se muestran los primeros 1.000 números en esta vista de prueba.';grid.after(msg);}
+}
+function toggleDemoNumber(n){
+ const feedback=document.getElementById('demoNumbersFeedback');if(demoTakenNumbers.has(n))return;
+ if(demoSelectedNumbers.has(n))demoSelectedNumbers.delete(n);
+ else if(demoSelectedNumbers.size<10)demoSelectedNumbers.add(n);
+ else {if(feedback)feedback.textContent='Podés seleccionar hasta 10 números por solicitud.';return;}
+ document.querySelectorAll('[data-demo-number]').forEach(b=>b.classList.toggle('selected',demoSelectedNumbers.has(Number(b.dataset.demoNumber))));
+ if(feedback)feedback.textContent='Seleccionados: '+([...demoSelectedNumbers].sort((a,b)=>a-b).join(', ')||'ninguno');
+}
+async function submitDemoNumbers(id){
+ const feedback=document.getElementById('demoNumbersFeedback');if(!feedback)return;
+ if(!currentParticipant){feedback.textContent='Ingresá con tu cuenta para enviar una solicitud de demostración.';return;}
+ if(!demoSelectedNumbers.size){feedback.textContent='Elegí al menos un número.';return;}
+ const btn=document.querySelector('[data-demo-submit]');if(btn)btn.disabled=true;
+ feedback.textContent='Enviando solicitud de prueba…';
+ try{
+  const {error}=await supabase.rpc('submit_demo_number_request',{p_campaign_id:id,p_numbers:[...demoSelectedNumbers].sort((a,b)=>a-b)});
+  if(error)throw error;
+  feedback.textContent='Solicitud de prueba registrada. Estado: pendiente de revisión. No es una reserva válida ni un pago.';
+  demoSelectedNumbers.clear();document.querySelectorAll('[data-demo-number]').forEach(b=>b.classList.remove('selected'));
+  await loadOwnDemoRequests();
+ }catch(e){feedback.textContent='No se pudo enviar: '+(e.message||String(e));}
+ finally{if(btn)btn.disabled=false;}
+}
+async function loadOwnDemoRequests(){
+ const el=document.getElementById('myDemoRequests');if(!el)return;
+ if(!supabase||!currentParticipant){el.textContent='Iniciá sesión para ver tus solicitudes de prueba.';return;}
+ const {data,error}=await supabase.from('demo_number_requests').select('created_at,status,requested_numbers,campaigns(title)').eq('participant_id',currentParticipant.id).order('created_at',{ascending:false}).limit(30);
+ if(error){el.textContent='No se pudieron cargar tus solicitudes de prueba: '+error.message;return;}
+ el.innerHTML='<h3>Mis solicitudes de números (prueba)</h3>'+(data?.length?data.map(x=>'<div class="detail-row"><span>'+escapeHTML(x.campaigns?.title||'Ficha')+' · '+escapeHTML((x.requested_numbers||[]).join(', '))+'</span><b>'+escapeHTML(({pending:'Pendiente',approved:'Aceptada en prueba',rejected:'Rechazada'})[x.status]||x.status)+'</b></div>').join(''):'<p class="muted">No hay solicitudes.</p>')+'<p class="muted">Ningún número de esta lista representa una participación válida.</p>';
+}
+document.addEventListener('click',e=>{const n=e.target.closest('[data-demo-number]');if(n)toggleDemoNumber(Number(n.dataset.demoNumber));const b=e.target.closest('[data-demo-submit]');if(b)submitDemoNumbers(b.dataset.demoSubmit);});
+
+// Etapa 4: consultas informativas por WhatsApp. Nunca se convierten en pagos ni reservas.
+let unamanoContactPhone=null;
+async function loadContactSettings(){
+ if(!supabase)return;
+ const {data,error}=await supabase.from('contact_settings').select('whatsapp_number').eq('singleton',true).maybeSingle();
+ if(!error)unamanoContactPhone=(data?.whatsapp_number||null);
+}
+document.addEventListener('click',event=>{const w=event.target.closest('[data-whatsapp-contact]');if(w)openCampaignWhatsApp(w.dataset.whatsappContact);const i=event.target.closest('[data-save-inquiry]');if(i)saveCampaignInquiry(i.dataset.saveInquiry);});
+function contactFeedback(message){const el=document.getElementById('contactFeedback');if(el)el.textContent=message;else toast(message);}
+function openCampaignWhatsApp(id){
+ const c=campaigns.find(x=>String(x.id)===String(id));if(!c)return;
+ if(!unamanoContactPhone)return contactFeedback('El contacto de WhatsApp todavía no fue configurado por UNAMANO.');
+ const text='Hola UNAMANO, quisiera información sobre la ficha: '+c.title+'. No estoy realizando una compra ni una reserva.';
+ const url='https://wa.me/'+unamanoContactPhone.replace(/\D/g,'')+'?text='+encodeURIComponent(text);
+ window.open(url,'_blank','noopener,noreferrer');
+}
+async function saveCampaignInquiry(id){
+ if(!supabase)return contactFeedback('No se pudo conectar con Supabase.');
+ if(!currentParticipant){contactFeedback('Ingresá con tu cuenta para guardar consultas. Los invitados pueden contactar por WhatsApp.');return;}
+ const c=campaigns.find(x=>String(x.id)===String(id));if(!c)return;
+ const {error}=await supabase.from('contact_inquiries').insert({campaign_id:c.id,participant_id:currentParticipant.id});
+ if(error){contactFeedback(error.code==='23505'?'Ya guardaste una consulta sobre esta ficha.':'No se pudo guardar la consulta: '+error.message);return;}
+ contactFeedback('Consulta informativa guardada en tu cuenta. No es una reserva ni un pago.');
+ await loadOwnInquiries();
+}
+async function loadOwnInquiries(){
+ const container=document.getElementById('myInquiries');if(!container)return;
+ if(!supabase||!currentParticipant){container.textContent='Ingresá a tu cuenta para ver tus consultas.';return;}
+ const {data,error}=await supabase.from('contact_inquiries').select('created_at,status,campaigns(title)').eq('participant_id',currentParticipant.id).order('created_at',{ascending:false}).limit(50);
+ if(error){container.textContent='No fue posible cargar tus consultas: '+error.message;return;}
+ container.innerHTML='<h3>Mis consultas informativas</h3>'+(data?.length?data.map(x=>'<div class="detail-row"><span>'+escapeHTML(x.campaigns?.title||'Campaña')+'</span><b>'+escapeHTML(({new:'Recibida',contacted:'Contactada',closed:'Cerrada'})[x.status]||x.status)+'</b></div>').join(''):'<p class="muted">Todavía no guardaste consultas.</p>')+'<p class="muted">Estas consultas no son pedidos, pagos ni asignaciones de números.</p>';
+}
+
+// Etapa 3: cuenta de participantes, independiente del acceso administrativo.
+let accountMode='login';let currentParticipant=null;let accountBusy=false;
+// Invitado es navegación pública sin usuario de Auth: no recibe privilegios de 'authenticated'.
+const GUEST_KEY='unamano_guest_mode';const GOOGLE_PENDING_KEY='unamano_google_redirect';
+let guestMode=sessionStorage.getItem(GUEST_KEY)==='1';
+function setGuestMode(value){guestMode=Boolean(value);if(guestMode)sessionStorage.setItem(GUEST_KEY,'1');else sessionStorage.removeItem(GUEST_KEY);renderAccountState();}
+function renderAccountState(){const signed=!!currentParticipant;accountEl('accountSigned').hidden=!signed;accountEl('accountGuestMode').hidden=signed||!guestMode;accountEl('accountGuest').hidden=signed||guestMode;const banner=accountEl('guestHomeBanner');if(banner)banner.hidden=signed||!guestMode;}
+async function startGoogleSignIn(){if(accountBusy)return;if(!supabase)return accountFeedback('No se pudo cargar Supabase. Verificá tu conexión.');if(location.protocol!=='https:' && !(location.protocol==='http:' && ['localhost','127.0.0.1'].includes(location.hostname)))return accountFeedback('Para iniciar sesión con Google abrí UNAMANO desde un sitio HTTPS o desde http://localhost. No funciona de forma confiable con file://.');const button=accountEl('googleSignIn');accountBusy=true;button.disabled=true;accountFeedback('Redirigiendo a Google…');try{const redirectTo=location.origin+location.pathname;sessionStorage.setItem(GOOGLE_PENDING_KEY,'1');const {data,error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo,scopes:'email profile'}});if(error)throw error;if(!data?.url)throw new Error('Supabase no devolvió la dirección de Google. Revisá si el proveedor está habilitado.');window.location.assign(data.url);}catch(e){sessionStorage.removeItem(GOOGLE_PENDING_KEY);accountFeedback('Google: '+accountError(e));}finally{accountBusy=false;button.disabled=false;}}
+function enterGuest(){if(currentParticipant){indexTab('account');return;}setGuestMode(true);indexTab('home');toast('Estás navegando como invitado. Podés explorar los premios sin registrarte.');}
+function leaveGuest(){setGuestMode(false);indexTab('account');accountFeedback('Ahora podés iniciar sesión o crear tu cuenta.');}
+function googleCallbackError(){const q=new URLSearchParams(location.search);const h=new URLSearchParams(location.hash.replace(/^#/,''));const code=q.get('error_code')||h.get('error_code');const desc=q.get('error_description')||h.get('error_description')||q.get('error')||h.get('error');if(!code&&!desc)return false;const msg='Google no pudo completar el ingreso: '+(desc||code);indexTab('account');accountFeedback(msg);if(location.protocol==='https:'||location.protocol==='http:')history.replaceState(null,'',location.pathname);sessionStorage.removeItem(GOOGLE_PENDING_KEY);return true;}
+
+const accountEl=id=>document.getElementById(id);
+function accountFeedback(text){accountEl('accountMessage').textContent=text||'';}
+function setAccountMode(mode){accountMode=mode;accountEl('accountNameField').hidden=mode!=='register';accountEl('accountPasswordField').hidden=mode==='reset';accountEl('accountPassword').required=mode!=='reset';accountEl('accountName').required=mode==='register';accountEl('accountPassword').autocomplete=mode==='register'?'new-password':'current-password';accountEl('accountSubmit').textContent=({login:'Ingresar',register:'Crear cuenta',reset:'Enviar enlace de recuperación'})[mode];document.querySelectorAll('[data-account-mode]').forEach(b=>b.classList.toggle('active',b.dataset.accountMode===mode));accountFeedback('');}
+function accountError(err){const msg=String(err?.message||err||'Error inesperado');if(/invalid login credentials/i.test(msg))return 'Correo o contraseña incorrectos.';if(/email not confirmed/i.test(msg))return 'Revisá tu correo y confirmá el registro.';if(/already registered|user already registered/i.test(msg))return 'Ese correo ya está registrado. Usá Ingresar o Recuperar acceso.';if(/password/i.test(msg))return 'La contraseña no cumple los requisitos de seguridad: '+msg;return msg;}
+async function refreshParticipant(){if(!supabase){accountFeedback('No se pudo cargar el servicio de cuentas. Revisá la conexión e intentá nuevamente.');return;}try{const {data:{user},error}=await supabase.auth.getUser();if(error&&!/session missing/i.test(error.message||''))throw error;currentParticipant=user||null;if(user){guestMode=false;sessionStorage.removeItem(GUEST_KEY);sessionStorage.removeItem(GOOGLE_PENDING_KEY);}renderAccountState();if(user){accountEl('accountSignedEmail').textContent=user.email||'';const {data:profile,error:pe}=await supabase.from('profiles').select('display_name,role').eq('id',user.id).maybeSingle();if(pe)throw pe;accountEl('profileName').value=profile?.display_name||'';accountEl('profileMessage').textContent=profile?.role==='admin'?'Cuenta administrativa: para gestionar campañas utilizá el panel privado.':'';await loadOwnInquiries();await loadOwnDemoRequests();}}catch(e){accountFeedback('No se pudo actualizar el perfil: '+accountError(e));}}
+async function submitAccount(event){event.preventDefault();if(accountBusy)return;if(!supabase)return accountFeedback('La conexión a Supabase no está disponible.');accountBusy=true;accountEl('accountSubmit').disabled=true;accountFeedback('Conectando…');const email=accountEl('accountEmail').value.trim(),password=accountEl('accountPassword').value,name=accountEl('accountName').value.trim();try{if(accountMode==='login'){const {error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;accountFeedback('Sesión iniciada.');await refreshParticipant();}
+else if(accountMode==='register'){if(!name||password.length<8)throw new Error('Ingresá tu nombre y una contraseña de al menos 8 caracteres.');const {data,error}=await supabase.auth.signUp({email,password,options:{data:{display_name:name}}});if(error)throw error;if(data?.session){accountFeedback('Cuenta creada correctamente.');await refreshParticipant();}else accountFeedback('Si el registro fue aceptado, recibirás un correo para confirmar tu cuenta. Revisá también Spam.');}
+else{const redirectTo=location.protocol==='https:'?location.origin+location.pathname:undefined;const {error}=await supabase.auth.resetPasswordForEmail(email,redirectTo?{redirectTo}:{});if(error)throw error;accountFeedback('Si existe una cuenta para este correo, recibirás instrucciones de recuperación.');}}
+catch(e){accountFeedback(accountError(e));}finally{accountBusy=false;accountEl('accountSubmit').disabled=false;}}
+async function updateProfile(event){event.preventDefault();const name=accountEl('profileName').value.trim();if(!currentParticipant||!name)return;const {error}=await supabase.from('profiles').update({display_name:name}).eq('id',currentParticipant.id);accountEl('profileMessage').textContent=error?'No se pudo guardar el nombre: '+accountError(error):'Nombre actualizado.';}
+async function signOutParticipant(){if(!supabase)return;const {error}=await supabase.auth.signOut();if(error)return accountFeedback(accountError(error));currentParticipant=null;setGuestMode(false);accountFeedback('Sesión cerrada.');}
+accountEl('accountGuest').addEventListener('click',event=>{const b=event.target.closest('[data-account-mode]');if(b)setAccountMode(b.dataset.accountMode);});
+accountEl('accountForm').addEventListener('submit',submitAccount);
+accountEl('profileForm').addEventListener('submit',updateProfile);
+accountEl('accountLogout').addEventListener('click',signOutParticipant);
+accountEl('googleSignIn').addEventListener('click',startGoogleSignIn);
+accountEl('guestSignIn').addEventListener('click',enterGuest);
+accountEl('guestUpgrade').addEventListener('click',leaveGuest);
+accountEl('guestExit').addEventListener('click',leaveGuest);
+accountEl('guestHomeLogin').addEventListener('click',leaveGuest);
+renderAccountState();
+setAccountMode('login');
+if(supabase){
+  const oauthError=googleCallbackError();
+  if(!oauthError && sessionStorage.getItem(GOOGLE_PENDING_KEY)==='1') {indexTab('account');accountFeedback('Comprobando el inicio de sesión con Google…');}
+  supabase.auth.onAuthStateChange((ev)=>{
+    if(ev==='SIGNED_IN'||ev==='SIGNED_OUT'||ev==='TOKEN_REFRESHED')setTimeout(()=>refreshParticipant(),0);
+  });
+  refreshParticipant();
+}else if(sessionStorage.getItem(GOOGLE_PENDING_KEY)==='1'){
+  indexTab('account');accountFeedback('No se pudo cargar la biblioteca de Supabase para terminar el ingreso. Recargá la página con conexión a internet.');
+}
+// Los enlaces de recuperación llevan a esta misma página y permiten elegir nueva contraseña.
+if(supabase){supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){indexTab('account');accountEl('accountGuest').hidden=false;accountEl('accountSigned').hidden=true;accountEl('accountMessage').innerHTML='Recuperación verificada. Introducí tu nueva contraseña abajo.';if(!accountEl('recoveryForm')){const f=document.createElement('form');f.id='recoveryForm';f.innerHTML='<div class="field"><label for="recoveryPassword">Nueva contraseña (mínimo 8 caracteres)</label><input id="recoveryPassword" type="password" minlength="8" required></div><button class="btn" type="submit">Cambiar contraseña</button>';accountEl('accountGuest').appendChild(f);f.addEventListener('submit',async e=>{e.preventDefault();const {error}=await supabase.auth.updateUser({password:accountEl('recoveryPassword').value});accountFeedback(error?accountError(error):'Contraseña actualizada. Ya podés ingresar.');if(!error)f.remove();});}}});}
+loadContactSettings();renderCategories();renderCards();loadPublicCampaigns().catch(e=>{console.error('Error de conexión UNAMANO:',e);document.getElementById('campaignCards').innerHTML='<div class="panel empty">No fue posible consultar el catálogo en este momento.</div>';});
 </script>
 </body></html>
