@@ -69,7 +69,7 @@ body{background:var(--bg);color:var(--text)}
 .draw-input{min-height:150px;resize:vertical}
 @media(prefers-reduced-motion:reduce){.draw-wheel.spinning strong{animation:none}}
 </style></head><body><div class="app"><header class="topbar"><div class="brand"><div class="brand-mark">U</div><div>UNAMANO<small>ADMINISTRACIÓN</small></div></div><div class="top-actions"><a class="pill" href="index.html">← Ver sitio público</a><span class="pill">PANEL PRIVADO</span></div></header><main>
-<section id="loginPanel" class="panel" style="max-width:460px;margin:8vh auto"><div class="eyebrow">CENTRO DE CONTROL</div><h1 style="margin:8px 0 4px">Ingresar a ADMIN</h1><p class="muted">Usá la cuenta autorizada de UNAMANO.</p><form id="loginForm" novalidate onsubmit="event.preventDefault(); adminLogin(event); return false;"><div class="field"><label for="adminEmail">Correo electrónico</label><input id="adminEmail" type="email" autocomplete="username" required></div><div class="field"><label for="adminPassword">Contraseña</label><input id="adminPassword" type="password" autocomplete="current-password" required></div><p id="loginError" class="draw-help" role="alert"></p><button class="btn" style="width:100%" type="submit">Ingresar</button></form></section>
+<section id="loginPanel" class="panel" style="max-width:460px;margin:8vh auto"><div class="eyebrow">CENTRO DE CONTROL</div><h1 style="margin:8px 0 4px">Ingresar a ADMIN</h1><p class="muted">Usá la cuenta autorizada de UNAMANO.</p><form id="loginForm" novalidate onsubmit="event.preventDefault(); adminLogin(event); return false;"><div class="field"><label for="adminEmail">Correo electrónico</label><input id="adminEmail" type="email" autocomplete="username" required></div><div class="field"><label for="adminPassword">Contraseña</label><input id="adminPassword" type="password" autocomplete="current-password" required></div><p id="loginError" class="draw-help" role="alert" aria-live="polite"></p><button class="btn" style="width:100%" type="submit">Ingresar</button></form></section>
 <section id="adminPanel" hidden><div class="toolbar"><div><div class="eyebrow">CENTRO DE CONTROL</div><h2>Administración</h2><p class="muted" style="margin:4px 0">Panel privado · Acceso autenticado</p></div><span class="status off">OPERACIÓN REAL BLOQUEADA</span></div><div class="admin-layout"><aside class="sidebar"><div class="brand" style="margin:5px 8px 16px"><div class="brand-mark">U</div><div>UNAMANO<small>ADMIN</small></div></div><button class="side-btn active" data-tab="overview" onclick="adminTab('overview',this)">▦ &nbsp; Resumen</button><button class="side-btn" data-tab="campaigns" onclick="adminTab('campaigns',this)">🎟 &nbsp; Sorteos</button><button class="side-btn" data-tab="prizes" onclick="adminTab('prizes',this)">◇ &nbsp; Premios</button><button class="side-btn" data-tab="participants" onclick="adminTab('participants',this)">♙ &nbsp; Participantes</button><button class="side-btn" data-tab="payments" onclick="adminTab('payments',this)">▣ &nbsp; Pagos</button><button class="side-btn" data-tab="jurisdictions" onclick="adminTab('jurisdictions',this)">⌖ &nbsp; Jurisdicciones</button><button class="side-btn" data-tab="results" onclick="adminTab('results',this)">🏆 &nbsp; Resultados</button><button class="side-btn" data-tab="finance" onclick="adminTab('finance',this)">▤ &nbsp; Finanzas</button><button class="side-btn" data-tab="settings" onclick="adminTab('settings',this)">⚙ &nbsp; Configuración</button></aside><div class="admin-content" id="adminContent"></div></div></section>
 <div id="adminDiagnostics" class="draw-help" role="status" style="margin:16px auto 0;max-width:1160px;padding:10px;border:1px solid #e9bb5555;border-radius:10px;background:#e9bb550d;color:var(--gold2)">Diagnóstico: esperando ejecución de JavaScript…</div></main><nav class="bottomnav" id="adminNav"><button class="active" onclick="adminTab('overview')"><i>▦</i>Resumen</button><button onclick="adminTab('campaigns')"><i>🎟</i>Sorteos</button><button onclick="adminTab('participants')"><i>♙</i>Personas</button><button onclick="adminTab('finance')"><i>▤</i>Finanzas</button><button onclick="adminTab('settings')"><i>⚙</i>Más</button></nav><footer>UNAMANO ADMIN · Acceso restringido · Pagos y sorteos reales deshabilitados</footer></div><div class="modal-backdrop" id="modal"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -102,14 +102,36 @@ function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function showModal(content){document.getElementById("modalContent").innerHTML=content;document.getElementById("modal").classList.add("show")}
 function closeModal(){document.getElementById("modal").classList.remove("show")}
+// Devuelve una causa concreta. Los errores de red NO equivalen a falta de permisos.
 async function verifyAdmin(session){
-  if(!session){adminDiag("Autenticación sin sesión devuelta.");return false;}
-  if(!supabase){adminDiag("No hay cliente Supabase inicializado.");return false;}
-  const {data:profile,error}=await supabase.from("profiles").select("id,display_name,role").eq("id",session.user.id).maybeSingle();
-  if(error){adminDiag("Falló la consulta a profiles",error);return false;}
-  if(!profile){adminDiag("La cuenta inició sesión, pero no existe una fila para su usuario en profiles.");return false;}
-  if(profile.role!=="admin"){adminDiag("El perfil existe, pero role no es admin. Valor recibido: "+String(profile.role));return false;}
-  currentSession=session;currentProfile=profile;adminDiag("Usuario autenticado y rol admin verificado.");return true;
+  if(!session?.user?.id) return {ok:false,reason:"No hay una sesión válida."};
+  if(!supabase) return {ok:false,reason:"El cliente Supabase no se cargó."};
+  try {
+    // getUser consulta al servidor: evita confiar únicamente en el estado local del navegador.
+    const {data:identity,error:identityError}=await supabase.auth.getUser();
+    if(identityError) return {ok:false,reason:"No se pudo verificar la sesión: "+identityError.message,temporary:true};
+    if(!identity?.user || identity.user.id!==session.user.id) return {ok:false,reason:"La sesión no coincide con el usuario autenticado."};
+    const {data:profile,error}=await supabase.from("profiles")
+      .select("id,display_name,role").eq("id",identity.user.id).maybeSingle();
+    if(error) return {ok:false,reason:"No se pudo consultar el perfil ("+(error.code||"sin código")+"): "+error.message,temporary:true};
+    if(!profile) return {ok:false,reason:"El usuario está autenticado pero no tiene perfil en public.profiles."};
+    if(profile.role!=="admin") return {ok:false,reason:"La cuenta no tiene el rol admin en public.profiles."};
+    currentSession=session;currentProfile=profile;
+    return {ok:true};
+  }catch(error){return {ok:false,reason:"Fallo de conexión verificando el perfil: "+(error?.message||String(error)),temporary:true};}
+}
+function friendlyAuthError(error){
+  const msg=String(error?.message||"Error desconocido");
+  const code=String(error?.code||"");
+  if(code==="invalid_credentials" || /invalid login credentials/i.test(msg))
+    return "Correo o contraseña incorrectos para este proyecto. Verificá los datos o restablecé la contraseña desde Supabase Authentication.";
+  if(code==="email_not_confirmed" || /email not confirmed/i.test(msg))
+    return "El correo todavía no está confirmado en Supabase.";
+  if(code==="over_request_rate_limit" || /rate limit|too many requests/i.test(msg))
+    return "Demasiados intentos. Consultá el registro de Auth antes de reintentar.";
+  if(/failed to fetch|networkerror|load failed|fetch/i.test(msg))
+    return "No se pudo contactar con Supabase. Revisá tu conexión, bloqueadores o las herramientas de red del navegador.";
+  return "Supabase rechazó el ingreso ("+(code||"sin código")+"): "+msg;
 }
 async function adminLogin(event){
   if(event)event.preventDefault();
@@ -118,27 +140,26 @@ async function adminLogin(event){
   const email=document.getElementById("adminEmail").value.trim();
   const password=document.getElementById("adminPassword").value;
   errorEl.textContent="";
-  if(!supabase){const msg="El cliente Supabase no está disponible. Revisá el diagnóstico de abajo.";errorEl.textContent=msg;adminDiag(msg);return;}
-  if(!email||!password){errorEl.textContent="Ingresá correo y contraseña.";adminDiag("Faltan datos del formulario.");return;}
+  if(!supabase){errorEl.textContent="No se cargó la biblioteca de Supabase. Revisá el diagnóstico.";return;}
+  if(!email||!password){errorEl.textContent="Ingresá correo y contraseña.";return;}
   if(submitButton){submitButton.disabled=true;submitButton.textContent="Ingresando…";}
-  adminDiag("Enviando credenciales al servicio de autenticación…");
+  adminDiag("1/3: contactando a Supabase Auth…");
   try{
     const {data,error}=await supabase.auth.signInWithPassword({email,password});
-    if(error){errorEl.textContent="No se pudo iniciar sesión. Mirá el diagnóstico para conocer el motivo.";adminDiag("Supabase rechazó el inicio de sesión",error);return;}
-    if(!data||!data.session){errorEl.textContent="Supabase no devolvió una sesión.";adminDiag("Respuesta de autenticación sin sesión",data);return;}
-    adminDiag("Credenciales aceptadas. Verificando perfil y rol…");
-    if(!await verifyAdmin(data.session)){await supabase.auth.signOut();errorEl.textContent="La autenticación fue aceptada, pero no se pudo validar el acceso administrativo. Mirá el diagnóstico.";return;}
-    adminDiag("Acceso administrativo validado. Cargando panel…");
-    showAdminPanel();await renderAdmin("overview");
-    adminDiag("Ingreso completado.");
-  }catch(error){
-    errorEl.textContent="Se produjo un error durante el ingreso. Mirá el diagnóstico.";
-    adminDiag("Excepción durante el inicio de sesión",error);
-  }finally{if(submitButton){submitButton.disabled=false;submitButton.textContent="Ingresar";}}
+    if(error){const message=friendlyAuthError(error);errorEl.textContent=message;adminDiag("1/3: autenticación rechazada",error);return;}
+    if(!data?.session){errorEl.textContent="Auth respondió, pero no entregó una sesión.";adminDiag("1/3: falta la sesión");return;}
+    adminDiag("2/3: contraseña aceptada; verificando perfil y rol admin…");
+    const check=await verifyAdmin(data.session);
+    if(!check.ok){errorEl.textContent=check.reason;adminDiag("2/3: "+check.reason);return;}
+    showAdminPanel();adminDiag("3/3: acceso administrador validado; cargando datos…");
+    await renderAdmin("overview");adminDiag("Ingreso validado. Si el panel muestra un error, revisá las tablas/permisos de campañas.");
+  }catch(error){errorEl.textContent="Error inesperado: "+(error?.message||String(error));adminDiag("Error de ingreso",error);}
+  finally{if(submitButton){submitButton.disabled=false;submitButton.textContent="Ingresar";}}
 }
+
 function showAdminPanel(){document.getElementById("loginPanel").hidden=true;document.getElementById("adminPanel").hidden=false;document.body.classList.add("logged")}
 async function adminLogout(){await supabase.auth.signOut();currentSession=null;currentProfile=null;document.getElementById("adminPanel").hidden=true;document.getElementById("loginPanel").hidden=false;document.body.classList.remove("logged");document.getElementById("loginForm").reset();toast("Sesión administrativa cerrada")}
-async function adminTab(tab,btn){const {data:{session}}=await supabase.auth.getSession();if(!await verifyAdmin(session)){await adminLogout();toast("Sesión vencida o acceso no autorizado");return;}await renderAdmin(tab);document.querySelectorAll(".side-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));document.querySelectorAll("#adminNav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active")}
+async function adminTab(tab,btn){if(!supabase)return;const {data,error}=await supabase.auth.getSession();if(error){toast("Error consultando sesión: "+error.message);return;}const check=await verifyAdmin(data?.session);if(!check.ok){toast(check.reason);adminDiag("No se pudo validar sección: "+check.reason);return;}await renderAdmin(tab);document.querySelectorAll(".side-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));document.querySelectorAll("#adminNav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active")}
 async function renderAdmin(tab){const el=document.getElementById("adminContent");try{await renderAdminInner(tab,el)}catch(error){el.innerHTML='<div class="panel"><b>No se pudo mostrar esta sección.</b><p class="muted">'+escapeHTML(error&&error.message||error)+'</p></div>';adminDiag("Falló el renderizado del panel",error)}}
 async function renderAdminInner(tab,el){const head=(title,sub,action="")=>`<div class="toolbar"><div><h2>${title}</h2><p class="muted" style="margin:4px 0">${sub}</p></div>${action}</div>`;const {data:rows,error}=await supabase.from("campaigns").select("id,title,status,total_numbers,ticket_price,currency,prizes(title,categories(name))").order("created_at",{ascending:false});if(error){el.innerHTML='<div class="panel">No se pudieron cargar los datos del panel.<p class="muted">'+escapeHTML(error.message||"")+'</p></div>';adminDiag("Falló la consulta de campañas",error);return;}const count=rows?.length||0;const campaignsTable=rows?.length?`<div class="panel table-wrap"><table class="admin-table"><thead><tr><th>Campaña</th><th>Categoría</th><th>Estado</th><th>Números</th></tr></thead><tbody>${rows.map(c=>`<tr><td>${escapeHTML(c.title)}</td><td>${escapeHTML(c.prizes?.categories?.name||"General")}</td><td><span class="status">${escapeHTML(c.status)}</span></td><td>${c.total_numbers}</td></tr>`).join("")}</tbody></table></div>`:'<div class="panel empty">Todavía no hay campañas registradas.</div>';const simple=(title,sub,body)=>head(title,sub)+`<div class="panel">${body}</div>`;
 if(tab==="overview")el.innerHTML=head("Resumen general",`Datos reales del proyecto · Sesión: ${escapeHTML(currentProfile?.display_name||currentSession?.user?.email||"Administrador")}`,`<button class="btn secondary small" onclick="adminLogout()">Cerrar sesión</button>`)+`<div class="stats"><div class="stat"><span>Campañas registradas</span><b>${count}</b></div><div class="stat"><span>Pagos reales</span><b>0</b></div><div class="stat"><span>Ventas habilitadas</span><b style="color:var(--red)">NO</b></div><div class="stat"><span>Estado operativo</span><b>PRUEBA</b></div></div><div class="notice"><strong>Conexión activa con Supabase.</strong> La autenticación y los datos de campañas están conectados. Pagos, reservas y sorteos reales siguen bloqueados hasta completar las revisiones legales y técnicas.</div><div class="section-head"><div><h2>Campañas recientes</h2></div></div>${campaignsTable}`;
@@ -153,5 +174,5 @@ else if(tab==="settings")el.innerHTML=simple("Configuración","Estado de la cone
 }
 async function newCampaign(){const {data:cats,error}=await supabase.from("categories").select("id,name").eq("active",true).order("name");if(error){toast("No se pudieron cargar las categorías");return;}const opts=(cats||[]).map(c=>`<option value="${c.id}">${escapeHTML(c.name)}</option>`).join("");showModal(`<h3>Nueva campaña</h3><p class="muted">Se guardará como borrador. No se publicará ni habilitará ventas.</p><form onsubmit="createCampaign(event)"><div class="field"><label>Nombre de la campaña</label><input id="newTitle" required maxlength="120"></div><div class="field"><label>Descripción</label><textarea id="newDesc" maxlength="2000"></textarea></div><div class="field"><label>Premio</label><input id="newPrize" required maxlength="120"></div><div class="field"><label>Categoría</label><select id="newCategory" required>${opts}</select></div><div class="field"><label>Cantidad de números</label><input id="newTotal" type="number" min="1" max="1000000" value="100" required></div><div class="field"><label>Precio por número (ARS)</label><input id="newPrice" type="number" min="0" step="0.01" value="0" required></div><div class="modal-actions"><button type="button" class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" type="submit">Guardar borrador</button></div></form>`)}
 async function createCampaign(event){event.preventDefault();const title=document.getElementById("newTitle").value.trim(),description=document.getElementById("newDesc").value.trim(),prizeTitle=document.getElementById("newPrize").value.trim(),categoryId=document.getElementById("newCategory").value,total=Number(document.getElementById("newTotal").value),price=Number(document.getElementById("newPrice").value);if(!title||!prizeTitle||!Number.isInteger(total)||total<1||!Number.isFinite(price)||price<0){toast("Revisá los datos del formulario");return;}const {data:prize,error:pe}=await supabase.from("prizes").insert({title:prizeTitle,description,category_id:categoryId}).select("id").single();if(pe){toast("No se pudo guardar el premio: "+pe.message);return;}const {error}=await supabase.from("campaigns").insert({prize_id:prize.id,title,description,status:"draft",total_numbers:total,ticket_price:price,currency:"ARS",sales_enabled:false});if(error){toast("No se pudo guardar la campaña: "+error.message);return;}closeModal();toast("Borrador guardado en Supabase");await renderAdmin("campaigns")}
-(async()=>{try{if(!supabase){adminDiag("No se puede restaurar sesión porque Supabase no está disponible.");return;}const {data:{session},error}=await supabase.auth.getSession();if(error)throw error;if(session){if(await verifyAdmin(session)){showAdminPanel();await renderAdmin("overview")}else{await supabase.auth.signOut()}}supabase.auth.onAuthStateChange((_event,next)=>{currentSession=next});}catch(error){adminDiag("Falló la comprobación de sesión al abrir la página",error);}})();
+(async()=>{try{if(!supabase){adminDiag("No se puede restaurar la sesión: Supabase no está disponible.");return;}const {data,error}=await supabase.auth.getSession();if(error)throw error;if(data?.session){const check=await verifyAdmin(data.session);if(check.ok){showAdminPanel();await renderAdmin("overview");adminDiag("Sesión administrativa restaurada.");}else{adminDiag("Sesión encontrada, pero no se pudo abrir el panel: "+check.reason);document.getElementById("loginError").textContent=check.reason;}}else{adminDiag("Listo para iniciar sesión. Proyecto: UNAMANO.");}supabase.auth.onAuthStateChange((_event,next)=>{currentSession=next;});}catch(error){adminDiag("Error restaurando la sesión",error);}})();
 </script></body></html>
